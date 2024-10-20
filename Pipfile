@@ -7,6 +7,8 @@ name = "pypi"
 flask = "*"
 flask-jwt-extended = "*"
 flask-swagger = "*"
+flask-migrate = "*"
+flask-admin = "*"
 
 [dev-packages]
 
