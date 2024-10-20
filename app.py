@@ -1,5 +1,5 @@
 import os
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_migrate import Migrate, init, migrate, upgrade
 from flask_admin import Admin
 from dotenv import load_dotenv
@@ -38,12 +38,26 @@ JWTManager(app)
 # Registrar rutas del API
 app.register_blueprint(api, url_prefix='/api')
 
+
+@app.errorhandler(APIException)
+def handle_invalid_usage(error):
+    return jsonify(error.to_dict()), error.status_code
+
 # Ruta principal
 @app.route('/')
 def sitemap():
     if ENV == "development":
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
+
+@app.route('/<path:path>', methods=['GET'])
+def serve_any_other_file(path):
+    if not os.path.isfile(os.path.join(static_file_dir, path)):
+        path = 'index.html'
+    response = send_from_directory(static_file_dir, path)
+    response.cache_control.max_age = 0  # avoid cache memory
+    return response
+
 
 if __name__ == '__main__':
     PORT = int(os.getenv('PORT', 3001))
