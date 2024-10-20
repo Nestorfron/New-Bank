@@ -1,8 +1,9 @@
 import os
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_migrate import Migrate, init, migrate, upgrade
 from flask_admin import Admin
 from dotenv import load_dotenv
+from src.api.utils import APIException, generate_sitemap
 from src.api.models import db
 from src.api.routes import api
 from src.api.admin import setup_admin
@@ -11,7 +12,9 @@ from flask_cors import CORS
 
 load_dotenv()
 
-
+ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
+static_file_dir = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
 
 CORS(app) 
@@ -37,8 +40,10 @@ app.register_blueprint(api, url_prefix='/api')
 
 # Ruta principal
 @app.route('/')
-def home():
-    return "Bienvenido a la aplicación Flask", 200
+def sitemap():
+    if ENV == "development":
+        return generate_sitemap(app)
+    return send_from_directory(static_file_dir, 'index.html')
 
 if __name__ == '__main__':
     PORT = int(os.getenv('PORT', 3001))
