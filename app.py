@@ -22,7 +22,13 @@ CORS(app)
 app.url_map.strict_slashes = False
 
 # Configuración de la base de datos
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', "sqlite:////tmp/test.db")
+db_url = os.getenv("DATABASE_URL")
+if db_url is not None:
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
+        "postgres://", "postgresql://")
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
+    
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.environ.get("FLASK_APP_KEY")
 
